@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta property="og:title" content="H-Scripts" />
+    <meta property="og:description" content="Get your script now" />
+    <meta property="og:image" content="https://media.discordapp.net/attachments/1210197000306434069/1289012963142926417/20240926_203252.jpg?ex=66f7465f&is=66f5f4df&hm=feb5df21452b3dea3e62fd625a180d8f7a64eb497db830fc882f054e1d53af3c&" />
+    <meta property="og:url" content="https://h-scripts.site" />
+    <meta property="og:type" content="website" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Management</title>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #121212;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1, p {
+            margin-bottom: 20px;
+        }
+
+        #stepsContainer {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .step {
+            background-color: #1e1e1e;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 12px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .step:hover {
+            background-color: #333;
+            transform: translateY(-5px);
+        }
+
+        .step.completed {
+            background-color: #4caf50;
+        }
+
+        .step h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .step button {
+            background-color: #6200ea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .step button:hover {
+            background-color: #4a00c8;
+        }
+
+        #unlockButton {
+            background-color: #03dac5;
+            color: black;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            margin-top: 30px;
+            cursor: pointer;
+            display: none;
+        }
+
+        #unlockButton:hover {
+            background-color: #00bfa5;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 12px;
+        }
+
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4caf50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            font-size: 16px;
+        }
+
+        #editButton, #deleteButton {
+            background-color: #ffa500; /* Button color */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+
+        #editButton:hover, #deleteButton:hover {
+            background-color: #e68a00; /* Button hover color */
+        }
+
+        /* Edit modal */
+        #editModal {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #editForm {
+            background-color: #222;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #editForm input, #editForm textarea {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+        }
+
+        #saveButton {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #saveButton:hover {
+            background-color: #45a049;
+        }
+
+        #closeButton {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #closeButton:hover {
+            background-color: #e53935;
+        }
+    </style>
+
+    <!-- Firebase scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <h1 id="title">Content Management</h1>
+    
+    <!-- ID selection list -->
+    <select id="idSelect">
+        <option value="">Select ID</option>
+    </select>
+    
+    <button id="loadButton">Load Content</button>
+    
+    <img id="image" src="" alt="Image" style="display:none;">
+    <p id="description">Loading...</p>
+    <div id="stepsContainer"></div>
+    <button id="unlockButton">Unlock Content</button>
+
+    <div id="notification">Task completed! Move on to the next task.</div>
+
+    <div>
+        <button id="editButton">Edit</button>
+        <button id="deleteButton">Delete</button>
+    </div>
+
+    <!-- Edit modal -->
+    <div id="editModal">
+        <div id="editForm">
+            <h2>Edit Content</h2>
+            <input type="text" id="editTitle" placeholder="Title">
+            <textarea id="editDescription" rows="4" placeholder="Description"></textarea>
+            <input type="text" id="editImage" placeholder="Image URL">
+            <button id="saveButton">Save Changes</button>
+            <button id="closeButton">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let currentId = ''; // To store the current content ID
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJ6erh48TqECEM-OfZPQO0voOaTu7f_Og",
+            authDomain: "scripts-b35e3.firebaseapp.com",
+            projectId: "scripts-b35e3",
+            storageBucket: "scripts-b35e3.appspot.com",
+            messagingSenderId: "536349347913",
+            appId: "1:536349347913:web:7c4266a79eefc76e212f98"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Load IDs
+        function loadIds() {
+            const idSelect = document.getElementById('idSelect');
+            db.collection("scripts").get().then((snapshot) => {
+                snapshot.forEach((doc) => {
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = doc.id;
+                    idSelect.appendChild(option);
+                });
+            }).catch((error) => {
+                console.error("Error loading IDs:", error);
+            });
+        }
+
+        // Load content based on selected ID
+        document.getElementById('loadButton').addEventListener('click', () => {
+            const id = document.getElementById('idSelect').value;
+            if (id) {
+                currentId = id; // Store the current ID
+                loadContent(currentId);
+            } else {
+                alert("Please select an ID to load content.");
+            }
+        });
+
+        function loadContent(id) {
+            db.collection("scripts").doc(id).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const content = doc.data();
+                        document.getElementById('title').innerText = content.title;
+                        document.getElementById('description').innerText = content.description;
+                        document.getElementById('image').src = content.image;
+                        document.getElementById('image').style.display = 'block';
+
+                        const stepsContainer = document.getElementById('stepsContainer');
+                        stepsContainer.innerHTML = '';
+                        content.steps.forEach((step, index) => {
+                            const stepDiv = document.createElement('div');
+                            stepDiv.classList.add('step');
+                            stepDiv.innerHTML = `
+                                <h3>Step ${index + 1}: ${step.title}</h3>
+                                <button onclick="completeStep(this)">Complete</button>
+                            `;
+                            stepsContainer.appendChild(stepDiv);
+                        });
+
+                        document.getElementById('unlockButton').style.display = 'block';
+                    } else {
+                        alert("No content found for this ID.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error loading content:", error);
+                });
+        }
+
+        function completeStep(button) {
+            button.parentElement.classList.add('completed');
+            document.getElementById('notification').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('notification').style.display = 'none';
+            }, 3000);
+        }
+
+        document.getElementById('editButton').addEventListener('click', () => {
+            openEditModal();
+        });
+
+        document.getElementById('deleteButton').addEventListener('click', () => {
+            deleteContent();
+        });
+
+        function openEditModal() {
+            const editModal = document.getElementById('editModal');
+            const editTitle = document.getElementById('editTitle');
+            const editDescription = document.getElementById('editDescription');
+            const editImage = document.getElementById('editImage');
+
+            db.collection("scripts").doc(currentId).get().then(doc => {
+                if (doc.exists) {
+                    const content = doc.data();
+                    editTitle.value = content.title;
+                    editDescription.value = content.description;
+                    editImage.value = content.image;
+                    editModal.style.display = 'flex';
+                } else {
+                    alert("No content found for this ID.");
+                }
+            }).catch(error => {
+                console.error("Error loading content:", error);
+            });
+        }
+
+        document.getElementById('saveButton').addEventListener('click', () => {
+            const editTitle = document.getElementById('editTitle').value;
+            const editDescription = document.getElementById('editDescription').value;
+            const editImage = document.getElementById('editImage').value;
+
+            db.collection("scripts").doc(currentId).update({
+                title: editTitle,
+                description: editDescription,
+                image: editImage
+            }).then(() => {
+                alert("Content updated successfully!");
+                closeEditModal();
+                loadContent(currentId); // Reload the content to see changes
+            }).catch(error => {
+                console.error("Error updating content:", error);
+            });
+        });
+
+        document.getElementById('closeButton').addEventListener('click', () => {
+            closeEditModal();
+        });
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function deleteContent() {
+            db.collection("scripts").doc(currentId).delete().then(() => {
+                alert("Content deleted successfully!");
+                document.getElementById('idSelect').value = '';
+                document.getElementById('title').innerText = '';
+                document.getElementById('description').innerText = 'Loading...';
+                document.getElementById('image').style.display = 'none';
+                document.getElementById('stepsContainer').innerHTML = '';
+                document.getElementById('unlockButton').style.display = 'none';
+            }).catch((error) => {
+                console.error("Error deleting content:", error);
+            });
+        }
+
+        loadIds(); // Load IDs on page load
+    </script>
+</body>
+</html>
