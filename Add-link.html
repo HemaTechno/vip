@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Management Panel</title>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #121212;
+            color: #fff;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        label {
+            margin: 10px 0 5px;
+        }
+
+        input, textarea {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: none;
+            background-color: #2a2a2a;
+            color: #fff;
+            transition: background-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            background-color: #3a3a3a;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #6200ea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #4a00c8;
+        }
+
+        #stepsContainer {
+            margin-bottom: 20px;
+        }
+
+        .step {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .step select, .step input {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .step .stepTitle {
+            margin-right: 10px;
+        }
+
+        #notification {
+            margin-top: 20px;
+            display: none;
+            background-color: #4caf50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+    </style>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <h1>إضافة محتوى جديد</h1>
+    <form id="contentForm">
+        <label for="title">العنوان:</label>
+        <input type="text" id="title" required>
+
+        <label for="description">الوصف:</label>
+        <textarea id="description" rows="4" required></textarea>
+
+        <label for="image">رابط الصورة:</label>
+        <input type="text" id="image">
+
+        <div id="stepsContainer">
+            <label>الخطوات:</label>
+            <div class="step">
+                <input type="text" class="stepTitle" placeholder="عنوان المهمة" required>
+                <select>
+                    <option value="youtube">يوتيوب</option>
+                    <option value="link">رابط</option>
+                </select>
+                <input type="text" placeholder="أدخل الرابط هنا" required>
+                <button type="button" class="removeStep" style="display:none;">إزالة</button>
+            </div>
+        </div>
+
+        <button type="button" id="addStepButton">إضافة خطوة</button>
+        <button type="submit">إضافة المحتوى</button>
+    </form>
+
+    <div id="notification">تمت إضافة المحتوى بنجاح! تم نسخ الرابط.</div>
+
+    <script>
+        // إعداد Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDN6hj_5iKkC76RWGXax4f5DQOj8E4syTQ",
+            authDomain: "hema-fcf76.firebaseapp.com",
+            projectId: "hema-fcf76",
+            storageBucket: "hema-fcf76.appspot.com",
+            messagingSenderId: "76044728790",
+            appId: "1:76044728790:web:776cd44b329beee03ccc77",
+            measurementId: "G-MB5N3JM8M8"
+        };
+
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // إضافة خطوة جديدة
+        document.getElementById('addStepButton').addEventListener('click', function() {
+            const stepsContainer = document.getElementById('stepsContainer');
+            const stepDiv = document.createElement('div');
+            stepDiv.classList.add('step');
+            stepDiv.innerHTML = `
+                <input type="text" class="stepTitle" placeholder="عنوان المهمة" required>
+                <select>
+                    <option value="youtube">يوتيوب</option>
+                    <option value="link">رابط</option>
+                </select>
+                <input type="text" placeholder="أدخل الرابط هنا" required>
+                <button type="button" class="removeStep">إزالة</button>
+            `;
+            stepsContainer.appendChild(stepDiv);
+            
+            // إضافة وظيفة إزالة الخطوة
+            stepDiv.querySelector('.removeStep').addEventListener('click', function() {
+                stepsContainer.removeChild(stepDiv);
+            });
+        });
+
+        // معالجة إرسال النموذج
+        document.getElementById('contentForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const image = document.getElementById('image').value;
+            const stepsInputs = document.querySelectorAll('#stepsContainer .step');
+            const steps = Array.from(stepsInputs).map(step => {
+                const stepTitle = step.querySelector('.stepTitle').value;
+                const type = step.querySelector('select').value;
+                const url = step.querySelector('input[type="text"]:nth-of-type(2)').value;
+                return { title: stepTitle, type, url };
+            });
+
+            // إضافة المحتوى إلى Firestore
+            db.collection("scripts").add({
+                title: title,
+                description: description,
+                image: image,
+                steps: steps
+            })
+            .then((docRef) => {
+                // نسخ رابط المحتوى إلى الحافظة
+                const link = `https://adminhscripts.netlify.app/link?id=${docRef.id}`; // استبدل برابط موقعك
+                navigator.clipboard.writeText(link).then(() => {
+                    document.getElementById('notification').style.display = 'block';
+                    document.getElementById('contentForm').reset();
+                    setTimeout(() => {
+                        document.getElementById('notification').style.display = 'none';
+                    }, 3000);
+                });
+            })
+            .catch(error => {
+                console.error("خطأ في إضافة المحتوى: ", error);
+            });
+        });
+    </script>
+
+</body>
+</html>
