@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Content Editing Page">
+    <meta name="keywords" content="Edit, Content, Scripts">
+    <meta name="author" content="Hema_Tech1">
+    <title>Edit Content</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1e27;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #2c3140;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        form input, form textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: none;
+            font-size: 1.1em;
+        }
+        form button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        form button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Edit Content</h1>
+
+    <form id="editForm">
+        <input type="text" id="title" placeholder="Title" required>
+        <textarea id="description" placeholder="Description" required></textarea>
+        <input type="text" id="imageUrl" placeholder="Image URL" required>
+        <input type="text" id="author" placeholder="Author" required>
+        <input type="text" id="authorImage" placeholder="Author Image URL" required>
+        <input type="text" id="videoUrl" placeholder="Video URL" required>
+        <input type="text" id="script" placeholder="Script" required>
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDN6hj_5iKkC76RWGXax4f5DQOj8E4syTQ",
+            authDomain: "hema-fcf76.firebaseapp.com",
+            projectId: "hema-fcf76",
+            storageBucket: "hema-fcf76.appspot.com",
+            messagingSenderId: "76044728790",
+            appId: "1:76044728790:web:776cd44b329beee03ccc77",
+            measurementId: "G-MB5N3JM8M8"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Get the ID from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const docId = urlParams.get('id');
+
+        // Load current data for the document
+        if (docId) {
+            db.collection("scripts").doc(docId).get().then((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('title').value = data.title;
+                    document.getElementById('description').value = data.description;
+                    document.getElementById('imageUrl').value = data.imageUrl;
+                    document.getElementById('author').value = data.author;
+                    document.getElementById('authorImage').value = data.authorImage;
+                    document.getElementById('videoUrl').value = data.videoUrl;
+                    document.getElementById('script').value = data.script;
+                } else {
+                    alert('Document does not exist');
+                }
+            }).catch((error) => {
+                console.error("Error getting document:", error);
+            });
+        }
+
+        // On clicking "Save Changes"
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const updatedData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                imageUrl: document.getElementById('imageUrl').value,
+                author: document.getElementById('author').value,
+                authorImage: document.getElementById('authorImage').value,
+                videoUrl: document.getElementById('videoUrl').value,
+                script: document.getElementById('script').value
+            };
+
+            db.collection("scripts").doc(docId).update(updatedData).then(() => {
+                alert('Changes saved successfully');
+                window.location.href = 'manage-content.html'; // Redirect back to the content management page
+            }).catch((error) => {
+                console.error("Error updating document: ", error);
+            });
+        });
+    </script>
+
+</body>
+</html>
