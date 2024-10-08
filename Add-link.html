@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -96,38 +96,38 @@
 </head>
 <body>
 
-    <h1>إضافة محتوى جديد</h1>
+    <h1>Add New Content</h1>
     <form id="contentForm">
-        <label for="title">العنوان:</label>
+        <label for="title">Title:</label>
         <input type="text" id="title" required>
 
-        <label for="description">الوصف:</label>
+        <label for="description">Description:</label>
         <textarea id="description" rows="4" required></textarea>
 
-        <label for="image">رابط الصورة:</label>
+        <label for="image">Image URL:</label>
         <input type="text" id="image">
 
         <div id="stepsContainer">
-            <label>الخطوات:</label>
+            <label>Steps:</label>
             <div class="step">
-                <input type="text" class="stepTitle" placeholder="عنوان المهمة" required>
+                <input type="text" class="stepTitle" placeholder="Task Title" required>
                 <select>
-                    <option value="youtube">يوتيوب</option>
-                    <option value="link">رابط</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="link">Link</option>
                 </select>
-                <input type="text" placeholder="أدخل الرابط هنا" required>
-                <button type="button" class="removeStep" style="display:none;">إزالة</button>
+                <input type="text" placeholder="Enter link here" required>
+                <button type="button" class="removeStep" style="display:none;">Remove</button>
             </div>
         </div>
 
-        <button type="button" id="addStepButton">إضافة خطوة</button>
-        <button type="submit">إضافة المحتوى</button>
+        <button type="button" id="addStepButton">Add Step</button>
+        <button type="submit">Add Content</button>
     </form>
 
-    <div id="notification">تمت إضافة المحتوى بنجاح! تم نسخ الرابط.</div>
+    <div id="notification">Content added successfully! The link has been copied.</div>
 
     <script>
-        // إعداد Firebase
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDN6hj_5iKkC76RWGXax4f5DQOj8E4syTQ",
             authDomain: "hema-fcf76.firebaseapp.com",
@@ -138,33 +138,33 @@
             measurementId: "G-MB5N3JM8M8"
         };
 
-        // تهيئة Firebase
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // إضافة خطوة جديدة
+        // Add new step
         document.getElementById('addStepButton').addEventListener('click', function() {
             const stepsContainer = document.getElementById('stepsContainer');
             const stepDiv = document.createElement('div');
             stepDiv.classList.add('step');
             stepDiv.innerHTML = `
-                <input type="text" class="stepTitle" placeholder="عنوان المهمة" required>
+                <input type="text" class="stepTitle" placeholder="Task Title" required>
                 <select>
-                    <option value="youtube">يوتيوب</option>
-                    <option value="link">رابط</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="link">Link</option>
                 </select>
-                <input type="text" placeholder="أدخل الرابط هنا" required>
-                <button type="button" class="removeStep">إزالة</button>
+                <input type="text" placeholder="Enter link here" required>
+                <button type="button" class="removeStep">Remove</button>
             `;
             stepsContainer.appendChild(stepDiv);
             
-            // إضافة وظيفة إزالة الخطوة
+            // Add remove step functionality
             stepDiv.querySelector('.removeStep').addEventListener('click', function() {
                 stepsContainer.removeChild(stepDiv);
             });
         });
 
-        // معالجة إرسال النموذج
+        // Handle form submission
         document.getElementById('contentForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -179,7 +179,7 @@
                 return { title: stepTitle, type, url };
             });
 
-            // إضافة المحتوى إلى Firestore
+            // Add content to Firestore
             db.collection("scripts").add({
                 title: title,
                 description: description,
@@ -187,8 +187,8 @@
                 steps: steps
             })
             .then((docRef) => {
-                // نسخ رابط المحتوى إلى الحافظة
-                const link = `https://adminhscripts.netlify.app/link?id=${docRef.id}`; // استبدل برابط موقعك
+                // Copy content link to clipboard
+                const link = `https://adminhscripts.netlify.app/link?id=${docRef.id}`; // Replace with your website link
                 navigator.clipboard.writeText(link).then(() => {
                     document.getElementById('notification').style.display = 'block';
                     document.getElementById('contentForm').reset();
@@ -198,7 +198,7 @@
                 });
             })
             .catch(error => {
-                console.error("خطأ في إضافة المحتوى: ", error);
+                console.error("Error adding content: ", error);
             });
         });
     </script>
