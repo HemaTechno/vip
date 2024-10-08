@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit and Delete Scripts</title>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #121212;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #ffa726; /* Title color */
+        }
+        button {
+            margin: 10px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .script-container {
+            margin-bottom: 20px;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left; /* Left align text */
+        }
+        input, textarea {
+            margin: 10px 0;
+            padding: 10px;
+            width: 80%;
+            border-radius: 5px;
+            border: none;
+            background-color: #2e2e2e; /* Input background */
+            color: #fff; /* Input text color */
+            font-size: 16px; /* Font size */
+        }
+        input::placeholder, textarea::placeholder {
+            color: #aaa; /* Placeholder color */
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <h1>Edit and Delete Scripts</h1>
+    <div id="scriptsContainer"></div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBF-sE1rBlblyLGpN1m08VnQA-bvfmLvtk",
+            authDomain: "public-fcf30.firebaseapp.com",
+            projectId: "public-fcf30",
+            storageBucket: "public-fcf30.appspot.com",
+            messagingSenderId: "4481826675",
+            appId: "1:4481826675:web:1663b07dcfc06fec130f06"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Load scripts and provide options for editing and deleting
+        function loadScripts() {
+            const scriptsContainer = document.getElementById('scriptsContainer');
+            scriptsContainer.innerHTML = '';
+
+            db.collection("scripts").get().then(querySnapshot => {
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const scriptDiv = document.createElement('div');
+                    scriptDiv.className = 'script-container';
+                    scriptDiv.innerHTML = `
+                        <h3>${data.title}</h3>
+                        <p>${data.description}</p>
+                        <textarea id="scriptText-${doc.id}">${data.scriptText}</textarea><br>
+                        <button onclick="updateScript('${doc.id}')">Update</button>
+                        <button onclick="deleteScript('${doc.id}')">Delete</button>
+                    `;
+                    scriptsContainer.appendChild(scriptDiv);
+                });
+            });
+        }
+
+        // Update script
+        function updateScript(id) {
+            const scriptText = document.getElementById(`scriptText-${id}`).value;
+
+            const password = prompt("Enter password:");
+            if (password === "2007") {
+                db.collection("scripts").doc(id).update({
+                    scriptText: scriptText
+                }).then(() => {
+                    alert("Script updated successfully.");
+                    loadScripts(); // Reload scripts after update
+                }).catch(error => {
+                    console.error("Error updating script:", error);
+                });
+            } else {
+                alert("Incorrect password.");
+            }
+        }
+
+        // Delete script
+        function deleteScript(id) {
+            const password = prompt("Enter password:");
+            if (password === "2007") {
+                db.collection("scripts").doc(id).delete().then(() => {
+                    alert("Script deleted.");
+                    loadScripts(); // Reload scripts after deletion
+                }).catch(error => {
+                    console.error("Error deleting script:", error);
+                });
+            } else {
+                alert("Incorrect password.");
+            }
+        }
+
+        // Load scripts on page load
+        loadScripts();
+    </script>
+
+</body>
+</html>
