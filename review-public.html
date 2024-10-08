@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Review</title>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #1c1c1c;
+            color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+        }
+        .script-container {
+            margin-bottom: 20px;
+            background: linear-gradient(145deg, #2e2e2e, #232323);
+            box-shadow: 5px 5px 15px #000000, -5px -5px 15px #262626;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .script-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 10px 10px 20px #000000, -10px -10px 20px #262626;
+        }
+        h3 {
+            color: #ffa726;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #e0e0e0;
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+        a {
+            color: #29b6f6;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px 5px;
+            background-color: #4caf50;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #388e3c;
+        }
+        .reject-btn {
+            background-color: #f44336;
+        }
+        .reject-btn:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <h1>Review New Scripts</h1>
+    <div id="scriptsContainer"></div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBF-sE1rBlblyLGpN1m08VnQA-bvfmLvtk",
+            authDomain: "public-fcf30.firebaseapp.com",
+            projectId: "public-fcf30",
+            storageBucket: "public-fcf30.appspot.com",
+            messagingSenderId: "4481826675",
+            appId: "1:4481826675:web:1663b07dcfc06fec130f06"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function loadPendingScripts() {
+            const scriptsContainer = document.getElementById('scriptsContainer');
+            scriptsContainer.innerHTML = '';
+
+            db.collection("scripts").where("approved", "==", false).get().then(querySnapshot => {
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const scriptDiv = document.createElement('div');
+                    scriptDiv.className = 'script-container';
+                    scriptDiv.innerHTML = `
+                        <h3>${data.title}</h3>
+                        <p>${data.description}</p>
+                        <a href="${data.youtubeLink}" target="_blank">YouTube Link</a><br><br>
+                        <p><strong>Code:</strong> <br> ${data.scriptText}</p>
+                        <button onclick="approveScript('${doc.id}')">Approve</button>
+                        <button class="reject-btn" onclick="rejectScript('${doc.id}')">Reject</button>
+                    `;
+                    scriptsContainer.appendChild(scriptDiv);
+                });
+            });
+        }
+
+        function approveScript(id) {
+            const password = prompt("Enter password:");
+            if (password === "2007") {
+                db.collection("scripts").doc(id).update({
+                    approved: true
+                }).then(() => {
+                    alert("Script approved.");
+                    loadPendingScripts();
+                }).catch(error => {
+                    console.error("Error approving script:", error);
+                });
+            } else {
+                alert("Incorrect password.");
+            }
+        }
+
+        function rejectScript(id) {
+            const password = prompt("Enter password:");
+            if (password === "2007") {
+                db.collection("scripts").doc(id).delete().then(() => {
+                    alert("Script rejected.");
+                    loadPendingScripts();
+                }).catch(error => {
+                    console.error("Error deleting script:", error);
+                });
+            } else {
+                alert("Incorrect password.");
+            }
+        }
+
+        loadPendingScripts();
+    </script>
+
+</body>
+</html>
