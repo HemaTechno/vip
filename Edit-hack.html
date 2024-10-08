@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Management</title>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #5A5A5A;
+            margin-bottom: 30px;
+        }
+        .script-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .script-item:hover {
+            transform: scale(1.02);
+        }
+        .script-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #5A5A5A;
+            margin-bottom: 10px;
+        }
+        .script-description {
+            font-size: 16px;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .script-details {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .button-container {
+            margin-top: 10px;
+        }
+        button {
+            background-color: #6200ea;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #3700b3;
+            transform: scale(1.05);
+        }
+    </style>
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <h1>Script Management</h1>
+    <div id="scriptsContainer"></div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBespCtavesyrdzKcB3LRr4vXd_U6XhfO4",
+            authDomain: "token-9ae6a.firebaseapp.com",
+            projectId: "token-9ae6a",
+            storageBucket: "token-9ae6a.appspot.com",
+            messagingSenderId: "434290198239",
+            appId: "1:434290198239:web:a56983c6f74da146830b6a",
+            measurementId: "G-FMB4BZ07DR"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Fetch all scripts from Firestore
+        db.collection("scripts").get().then((querySnapshot) => {
+            const scriptsContainer = document.getElementById('scriptsContainer');
+            querySnapshot.forEach((doc) => {
+                const scriptData = doc.data();
+                const scriptId = doc.id;
+
+                // Create an element to display the script
+                const scriptItem = document.createElement('div');
+                scriptItem.className = 'script-item';
+                scriptItem.innerHTML = `
+                    <div class="script-title">${scriptData.title}</div>
+                    <div class="script-description">${scriptData.description}</div>
+                    <div class="script-details">Platform: ${scriptData.platform}</div>
+                    <div class="script-details">Download Link: <a href="${scriptData.downloadLink}" target="_blank">${scriptData.downloadLink}</a></div>
+                    <div class="button-container">
+                        <button onclick="editScript('${scriptId}')">Edit</button>
+                        <button onclick="deleteScript('${scriptId}')">Delete</button>
+                    </div>
+                `;
+                scriptsContainer.appendChild(scriptItem);
+            });
+        }).catch((error) => {
+            console.error("Error fetching scripts: ", error);
+        });
+
+        // Function to edit the script
+        function editScript(scriptId) {
+            window.location.href = `editScript.html?id=${scriptId}`; // Redirect to the edit page
+        }
+
+        // Function to delete the script
+        function deleteScript(scriptId) {
+            if (confirm("Are you sure you want to delete this script?")) {
+                db.collection("scripts").doc(scriptId).delete().then(() => {
+                    alert('Script deleted successfully!');
+                    location.reload(); // Reload the page to update the list
+                }).catch((error) => {
+                    console.error("Error deleting script: ", error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
