@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Script</title>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #5A5A5A;
+        }
+        form {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            margin-bottom: 10px;
+            display: block;
+            font-weight: bold; /* Make labels bold */
+        }
+        input[type="text"], input[type="url"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px; /* Increase font size */
+        }
+        input[type="submit"] {
+            background-color: #5A5A5A;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s; /* Smooth transition */
+        }
+        input[type="submit"]:hover {
+            background-color: #333;
+        }
+        .link-input {
+            display: none; /* Hide the link input by default */
+        }
+    </style>
+    <!-- Firebase Links -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <h1>Add New Script</h1>
+    <form id="scriptForm">
+        <label for="title">Title:</label>
+        <input type="text" id="title" required>
+
+        <label for="description">Description:</label>
+        <input type="text" id="description" required>
+
+        <label for="platform">Choose Platform:</label>
+        <select id="platform" required>
+            <option value="">-- Select Platform --</option>
+            <option value="android">Android</option>
+            <option value="ios">iPhone</option>
+            <option value="windows">Windows</option>
+        </select>
+
+        <div id="linkInputContainer" class="link-input">
+            <label for="downloadLink">Download Link:</label>
+            <input type="url" id="downloadLink" required>
+        </div>
+
+        <input type="submit" value="Add Script">
+    </form>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBespCtavesyrdzKcB3LRr4vXd_U6XhfO4",
+            authDomain: "token-9ae6a.firebaseapp.com",
+            projectId: "token-9ae6a",
+            storageBucket: "token-9ae6a.appspot.com",
+            messagingSenderId: "434290198239",
+            appId: "1:434290198239:web:a56983c6f74da146830b6a",
+            measurementId: "G-FMB4BZ07DR"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Show link input when a platform is selected
+        document.getElementById('platform').addEventListener('change', function() {
+            const selectedPlatform = this.value;
+            const linkInputContainer = document.getElementById('linkInputContainer');
+
+            if (selectedPlatform) {
+                linkInputContainer.style.display = 'block'; // Show link input
+            } else {
+                linkInputContainer.style.display = 'none'; // Hide link input
+            }
+        });
+
+        // Add event when submitting the form
+        document.getElementById('scriptForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent page reload
+
+            // Get values from the form
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const platform = document.getElementById('platform').value;
+            const downloadLink = document.getElementById('downloadLink').value;
+
+            // Save data to Firestore
+            db.collection("scripts").add({
+                title: title,
+                description: description,
+                platform: platform,
+                downloadLink: downloadLink,
+                id: Date.now() // Use timestamp as id
+            }).then(() => {
+                alert('Script added successfully!');
+                document.getElementById('scriptForm').reset(); // Reset the form
+                document.getElementById('linkInputContainer').style.display = 'none'; // Hide link input again
+            }).catch((error) => {
+                console.error("Error adding script: ", error);
+            });
+        });
+    </script>
+</body>
+</html>
