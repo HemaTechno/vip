@@ -106,4 +106,4 @@ client.on('interactionCreate', async interaction => {
 });
 
 // تسجيل الدخول إلى البوت
-client.login('YOUR_BOT_TOKEN');  // استبدل بالتوكن الخاص بالبوت
+client.login('MTE0NDM5NzY0ODEzMzExMTg2OQ.GGPivS.zQnA_9vxJQcJH9csb9JE5KyZsWIwX7ZqRdSwaE');  // استبدل بالتوكن الخاص بالبوت
