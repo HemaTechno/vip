@@ -97,48 +97,15 @@
                         <p>${data.description}</p>
                         <a href="${data.youtubeLink}" target="_blank">YouTube Link</a><br><br>
                         <p><strong>Code:</strong> <br> ${data.scriptText}</p>
-                        <button onclick="approveScript('${doc.id}', '${data.title}', '${data.description}')">Approve</button>
-                        <button class="reject-btn" onclick="rejectScript('${doc.id}', '${data.title}', '${data.description}')">Reject</button>
+                        <button onclick="approveScript('${doc.id}')">Approve</button>
+                        <button class="reject-btn" onclick="rejectScript('${doc.id}')">Reject</button>
                     `;
                     scriptsContainer.appendChild(scriptDiv);
                 });
             });
         }
 
-        async function sendDiscordMessage(action, title, description, scriptId) {
-            const webhookUrl = 'https://discord.com/api/webhooks/1157476878114889768/iJ6OmAmYxfjd_NkXgbEDMLxudbYmidxnqsP-uWKcYzOZYaE8wIhvjH_3OTgZwy8lDSNt'; // استبدل بهذا الرابط
-            const scriptLink = `http://YOUR_SITE_URL/scripts/${scriptId}`; // استبدل بـ الرابط المباشر للسكربت
-
-            const embed = {
-                title: `Script ${action}`,
-                description: `Script Title: ${title}\nDescription: ${description}\n[View Script](${scriptLink})`,
-                color: action === "Approved" ? 0x00ff00 : 0xff0000,
-            };
-
-            const messageData = {
-                embeds: [embed],
-            };
-
-            try {
-                const response = await fetch(webhookUrl, {
-                    method: 'POST',
-                    body: JSON.stringify(messageData),
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                if (response.ok) {
-                    console.log('Message sent to Discord successfully!');
-                } else {
-                    console.error('Failed to send message to Discord.');
-                }
-            } catch (error) {
-                console.error('Error sending message to Discord:', error);
-            }
-        }
-
-        function approveScript(id, title, description) {
+        function approveScript(id) {
             const password = prompt("Enter password:");
             if (password === "2007") {
                 db.collection("scripts").doc(id).update({
@@ -146,7 +113,6 @@
                 }).then(() => {
                     alert("Script approved.");
                     loadPendingScripts();
-                    sendDiscordMessage("Approved", title, description, id);
                 }).catch(error => {
                     console.error("Error approving script:", error);
                 });
@@ -155,13 +121,12 @@
             }
         }
 
-        function rejectScript(id, title, description) {
+        function rejectScript(id) {
             const password = prompt("Enter password:");
             if (password === "2007") {
                 db.collection("scripts").doc(id).delete().then(() => {
                     alert("Script rejected.");
                     loadPendingScripts();
-                    sendDiscordMessage("Rejected", title, description, id);
                 }).catch(error => {
                     console.error("Error deleting script:", error);
                 });
